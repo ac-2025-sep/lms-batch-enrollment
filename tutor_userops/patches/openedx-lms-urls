@@ -1,0 +1,3 @@
+urlpatterns += [
+    path("api/userops/v1/", include("userops.urls")),
+]
