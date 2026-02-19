@@ -22,3 +22,6 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 include = ["tutor_userops*", "userops*"]
+
+[project.entry-points."lms.djangoapp"]
+userops = "userops.apps:UserOpsConfig"

@@ -14,8 +14,14 @@ def _read_patch(name: str) -> str:
 
 hooks.Filters.ENV_PATCHES.add_items(
     [
-        ("openedx-lms-common-settings", _read_patch("openedx-lms-common-settings")),
-        ("openedx-lms-urls", _read_patch("openedx-lms-urls")),
+        (
+            "openedx-lms-common-settings",
+            _read_patch("openedx-lms-common-settings"),
+        ),
+        (
+            "openedx-lms-env-features",
+            _read_patch("openedx-lms-env-features"),
+        ),
         (
             "openedx-dockerfile-post-python-requirements",
             "RUN pip install /openedx/plugins/userops",

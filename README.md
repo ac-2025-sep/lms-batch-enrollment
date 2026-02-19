@@ -109,8 +109,9 @@ The plugin registers:
   - `openedx-dockerfile-post-python-requirements` -> `RUN pip install /openedx/plugins/userops`
 - LMS settings patch:
   - `INSTALLED_APPS += ["userops"]`
-- LMS URL patch:
-  - `path("api/userops/v1/", include("userops.urls"))`
+- LMS feature patch:
+  - `"ENABLE_BULK_ENROLLMENT_VIEW": true`
+- LMS URL plugin mapping via `userops.apps.UserOpsConfig.plugin_app` under `PluginURLs.CONFIG` to mount `^api/userops/v1/`.
 
 ## Verification
 
