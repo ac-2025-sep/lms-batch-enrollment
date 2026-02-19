@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "tutor-contrib-userops"
+version = "0.1.0"
+description = "Tutor plugin + Open edX app for metadata-based user preview and bulk enrollment"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{name = "UserOps"}]
+dependencies = [
+  "tutor>=20.0.0",
+  "djangorestframework>=3.14.0",
+]
+
+[project.entry-points."tutor.plugin.v1"]
+userops = "tutor_userops.plugin"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["tutor_userops*", "userops*"]
