@@ -1,9 +1,6 @@
-# Tutor UserOps Plugin (Tutor v20.x / Open edX Teak)
+# UserOps Django App (Open edX)
 
-This repository contains:
-
-1. **Tutor plugin package**: `tutor_userops`
-2. **Django app package**: `userops`
+This repository contains the **`userops` Django app** only.
 
 It installs a staff-only API in LMS to:
 
@@ -85,50 +82,18 @@ Validation highlights:
 - `action` must be `enroll` or `unenroll`.
 - If `cohorts` is provided and non-empty, its length must match `courses` length.
 
-## Installation (Tutor)
+## Installation
 
 From this repository root:
 
 ```bash
 pip install -e .
-tutor plugins enable userops
 ```
 
-Then rebuild/restart Open edX image so plugin files are pip-installed into the LMS container:
+Then make sure your Open edX environment loads this app via your own plugin/integration layer.
+This package exposes the standard Open edX entry point:
 
-```bash
-tutor images build openedx
-tutor local launch
-```
-
-## Tutor plugin integration details
-
-The plugin registers:
-
-- Docker build patch to install this repo inside openedx image:
-  - `openedx-dockerfile-post-python-requirements` -> `RUN pip install /openedx/plugins/userops`
-- LMS settings patch:
-  - `INSTALLED_APPS += ["userops"]`
-- LMS feature patch:
-  - `"ENABLE_BULK_ENROLLMENT_VIEW": true`
-- LMS URL plugin mapping via `userops.apps.UserOpsConfig.plugin_app` under `PluginURLs.CONFIG` to mount `^api/userops/v1/`.
-
-## Verification
-
-Check app installation:
-
-```bash
-tutor local run lms ./manage.py lms shell -c "import userops; print('ok')"
-```
-
-Check endpoint availability (as staff-authenticated session):
-
-```bash
-curl -X POST 'http://localhost:8000/api/userops/v1/users/preview' \
-  -H 'Content-Type: application/json' \
-  -H 'Cookie: edx-jwt-cookie=...' \
-  -d '{"filters": {"cluster": "NORTH 1"}, "limit": 10}'
-```
+- `lms.djangoapp`: `userops.apps:UserOpsConfig`
 
 ## Notes
 
