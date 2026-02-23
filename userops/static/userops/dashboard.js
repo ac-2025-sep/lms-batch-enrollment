@@ -1,12 +1,34 @@
 (function () {
   const FILTER_KEYS = [
+    "dealer_id",
+    "champion_name",
+    "champion_mobile",
+    "dealer_name",
+    "city",
+    "state",
+    "dealer_category",
     "cluster",
     "asm_1",
     "asm_2",
-    "state",
-    "city",
-    "dealer_category",
+    "role",
+    "department",
+    "brand",
+  ];
+
+  const PREVIEW_COLUMNS = [
+    "username",
+    "email",
     "dealer_id",
+    "dealer_name",
+    "city",
+    "state",
+    "dealer_category",
+    "cluster",
+    "asm_1",
+    "asm_2",
+    "role",
+    "department",
+    "brand",
   ];
 
   function getCookie(name) {
@@ -51,13 +73,47 @@
 
     for (const user of sample || []) {
       const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${user.username || ""}</td>
-        <td>${user.email || ""}</td>
-        <td><code>${JSON.stringify(user.org || {})}</code></td>
-      `;
+      row.innerHTML = PREVIEW_COLUMNS.map((column) => `<td class="meta">${user[column] || ""}</td>`).join("");
       body.appendChild(row);
     }
+  }
+
+  function populateFilterChoices(choices) {
+    for (const key of FILTER_KEYS) {
+      const select = document.getElementById(`filter-${key}`);
+      if (!select) {
+        continue;
+      }
+      select.innerHTML = '<option value="">All</option>';
+      const values = Array.isArray(choices[key]) ? choices[key] : [];
+      for (const value of values) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = value;
+        select.appendChild(option);
+      }
+    }
+  }
+
+  async function getJSON(url) {
+    const response = await fetch(url, {
+      method: "GET",
+      credentials: "same-origin",
+    });
+
+    let data;
+    try {
+      data = await response.json();
+    } catch (error) {
+      data = { detail: "Server returned non-JSON response." };
+    }
+
+    if (!response.ok) {
+      const detail = data.detail || JSON.stringify(data);
+      throw { status: response.status, detail };
+    }
+
+    return data;
   }
 
   async function postJSON(url, payload) {
@@ -99,10 +155,17 @@
     return "Unexpected error while processing request.";
   }
 
+  async function loadMetadataChoices() {
+    try {
+      const result = await getJSON("/api/userops/v1/metadata/choices");
+      populateFilterChoices(result.choices || {});
+    } catch (error) {
+      setStatus(`Failed to load filter choices. ${formatError(error)}`, "error");
+    }
+  }
+
   async function handlePreview() {
     const previewBtn = document.getElementById("preview-btn");
-    const limitRaw = document.getElementById("preview-limit").value;
-    const limit = parseInt(limitRaw, 10) || 50;
 
     previewBtn.disabled = true;
     setStatus("Loading preview...", "info");
@@ -110,11 +173,9 @@
     try {
       const result = await postJSON("/api/userops/v1/users/preview", {
         filters: collectFilters(),
-        limit,
       });
       document.getElementById("preview-count").textContent = `Count: ${result.count || 0}`;
       renderPreviewRows(result.sample || []);
-      document.getElementById("output-json").textContent = "";
       setStatus("Preview loaded successfully.", "success");
     } catch (error) {
       setStatus(formatError(error), "error");
@@ -159,16 +220,15 @@
       ].join(" | ");
 
       setStatus(summary, "success");
-      document.getElementById("output-json").textContent = JSON.stringify(result.upstream_body, null, 2);
     } catch (error) {
       setStatus(formatError(error), "error");
-      document.getElementById("output-json").textContent = "";
     } finally {
       executeBtn.disabled = false;
     }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    loadMetadataChoices();
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
   });
