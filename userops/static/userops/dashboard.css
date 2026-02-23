@@ -128,3 +128,40 @@ pre {
   border-color: #cf222e;
   color: #cf222e;
 }
+
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.admin-btn {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1;
+  color: #fff;
+  background: #0d6efd;
+}
+
+.admin-btn:hover {
+  background: #0b5ed7;
+}
+
+.secondary-btn {
+  background: #6c757d;
+}
+
+.secondary-btn:hover {
+  background: #5c636a;
+}
