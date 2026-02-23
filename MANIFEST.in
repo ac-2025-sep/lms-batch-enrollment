@@ -1,1 +1,2 @@
-# No extra package data required for userops app-only distribution.
+recursive-include userops/templates *.html
+recursive-include userops/static *
