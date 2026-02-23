@@ -1,18 +1,23 @@
 from django.apps import AppConfig
-
-from openedx.core.djangoapps.plugins.constants import PluginURLs
+from edx_django_utils.plugins.constants import PluginURLs
 
 
 class UserOpsConfig(AppConfig):
-    default_auto_field = "django.db.models.BigAutoField"
     name = "userops"
 
     plugin_app = {
         PluginURLs.CONFIG: {
-            "lms.djangoapp": {
-                PluginURLs.NAMESPACE: "userops",
-                PluginURLs.REGEX: r"^api/userops/v1/",
-                PluginURLs.RELATIVE_PATH: "urls",
-            }
+            "lms.djangoapp": [
+                {
+                    "namespace": "userops_api",
+                    "regex": r"^api/userops/v1/",
+                    "relative_path": "urls_api",
+                },
+                {
+                    "namespace": "userops_ui",
+                    "regex": r"^userops/",
+                    "relative_path": "urls_ui",
+                },
+            ]
         }
     }

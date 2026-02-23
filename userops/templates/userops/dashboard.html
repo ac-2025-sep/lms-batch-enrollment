@@ -1,0 +1,77 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UserOps Dashboard (Staff Only)</title>
+  <link rel="stylesheet" href="{% static 'userops/dashboard.css' %}">
+  <script src="{% static 'userops/dashboard.js' %}" defer></script>
+</head>
+<body>
+  <main class="container">
+    <h1>UserOps Dashboard (Staff Only)</h1>
+
+    <section class="card">
+      <h2>Metadata Filters</h2>
+      <div class="grid">
+        <label>cluster <input type="text" id="filter-cluster"></label>
+        <label>asm_1 <input type="text" id="filter-asm_1"></label>
+        <label>asm_2 <input type="text" id="filter-asm_2"></label>
+        <label>state <input type="text" id="filter-state"></label>
+        <label>city <input type="text" id="filter-city"></label>
+        <label>dealer_category <input type="text" id="filter-dealer_category"></label>
+        <label>dealer_id <input type="text" id="filter-dealer_id"></label>
+        <label>limit <input type="number" id="preview-limit" value="50" min="1"></label>
+      </div>
+      <button id="preview-btn" type="button">Preview</button>
+    </section>
+
+    <section class="card">
+      <h2>Preview Results</h2>
+      <p id="preview-count">Count: 0</p>
+      <table id="preview-table">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Org Metadata</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section class="card">
+      <h2>Bulk Enroll</h2>
+      <div class="grid">
+        <label>action
+          <select id="bulk-action">
+            <option value="enroll">enroll</option>
+            <option value="unenroll">unenroll</option>
+          </select>
+        </label>
+        <label class="inline"><input type="checkbox" id="bulk-auto_enroll" checked> auto_enroll</label>
+        <label class="inline"><input type="checkbox" id="bulk-email_students"> email_students</label>
+      </div>
+
+      <div class="grid">
+        <label>courses (one per line)
+          <textarea id="bulk-courses" rows="4" placeholder="course-v1:edX+Demo+2025"></textarea>
+        </label>
+        <label>cohorts (optional, one per line)
+          <textarea id="bulk-cohorts" rows="4" placeholder="cohortA"></textarea>
+        </label>
+      </div>
+
+      <button id="execute-btn" type="button">Execute</button>
+    </section>
+
+    <section class="card">
+      <h2>Output Summary</h2>
+      <div id="status-box" class="status"></div>
+      <pre id="output-json"></pre>
+    </section>
+  </main>
+</body>
+</html>

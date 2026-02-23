@@ -15,6 +15,13 @@ It installs a staff-only API in LMS to:
 - Matching users are converted to email identifiers (users with empty email are skipped).
 - Enrollment is forwarded to Open edX `BulkEnrollView` (no custom enrollment DB writes).
 
+
+## UserOps Dashboard (Staff Only)
+
+- URL: `/userops/`
+- APIs: `/api/userops/v1/...`
+- Access: You must be logged in as an LMS staff user.
+
 ## API Endpoints
 
 All endpoints are LMS endpoints and require `request.user.is_staff == True`.
