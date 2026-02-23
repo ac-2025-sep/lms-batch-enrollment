@@ -29,4 +29,4 @@ hooks.Filters.ENV_PATCHES.add_items(
     ]
 )
 
-hooks.Filters.IMAGES_BUILD_REQUIRED_FILES.add_item(("plugins/userops", "."))
+hooks.Filters.IMAGES_BUILD_REQUIRED.add_item(("plugins/userops", "."))
