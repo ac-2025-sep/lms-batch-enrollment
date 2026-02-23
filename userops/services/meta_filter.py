@@ -1,6 +1,23 @@
 import json
 from typing import Any
 
+METADATA_FILTER_KEYS = [
+    "dealer_id",
+    "champion_name",
+    "champion_mobile",
+    "dealer_name",
+    "city",
+    "state",
+    "dealer_category",
+    "cluster",
+    "asm_1",
+    "asm_2",
+    "role",
+    "department",
+    "brand",
+]
+
+
 def _normalize(value: Any) -> str:
     return str(value).strip().casefold()
 

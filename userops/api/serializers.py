@@ -3,7 +3,6 @@ from rest_framework import serializers
 
 class PreviewRequestSerializer(serializers.Serializer):
     filters = serializers.DictField(child=serializers.CharField(allow_blank=False), required=True)
-    limit = serializers.IntegerField(required=False, min_value=1, max_value=500, default=50)
 
 
 class BulkEnrollByMetadataSerializer(serializers.Serializer):

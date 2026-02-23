@@ -15,31 +15,48 @@
     <section class="card">
       <h2>Metadata Filters</h2>
       <div class="grid">
-        <label>cluster <input type="text" id="filter-cluster"></label>
-        <label>asm_1 <input type="text" id="filter-asm_1"></label>
-        <label>asm_2 <input type="text" id="filter-asm_2"></label>
-        <label>state <input type="text" id="filter-state"></label>
-        <label>city <input type="text" id="filter-city"></label>
-        <label>dealer_category <input type="text" id="filter-dealer_category"></label>
-        <label>dealer_id <input type="text" id="filter-dealer_id"></label>
-        <label>limit <input type="number" id="preview-limit" value="50" min="1"></label>
+        <label>dealer_id <select id="filter-dealer_id"><option value="">All</option></select></label>
+        <label>champion_name <select id="filter-champion_name"><option value="">All</option></select></label>
+        <label>champion_mobile <select id="filter-champion_mobile"><option value="">All</option></select></label>
+        <label>dealer_name <select id="filter-dealer_name"><option value="">All</option></select></label>
+        <label>city <select id="filter-city"><option value="">All</option></select></label>
+        <label>state <select id="filter-state"><option value="">All</option></select></label>
+        <label>dealer_category <select id="filter-dealer_category"><option value="">All</option></select></label>
+        <label>cluster <select id="filter-cluster"><option value="">All</option></select></label>
+        <label>asm_1 <select id="filter-asm_1"><option value="">All</option></select></label>
+        <label>asm_2 <select id="filter-asm_2"><option value="">All</option></select></label>
+        <label>role <select id="filter-role"><option value="">All</option></select></label>
+        <label>department <select id="filter-department"><option value="">All</option></select></label>
+        <label>brand <select id="filter-brand"><option value="">All</option></select></label>
       </div>
-      <button id="preview-btn" type="button">Preview</button>
+      <button id="preview-btn" type="button">Preview Users</button>
     </section>
 
     <section class="card">
       <h2>Preview Results</h2>
       <p id="preview-count">Count: 0</p>
-      <table id="preview-table">
-        <thead>
-          <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Org Metadata</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-wrap">
+        <table id="preview-table">
+          <thead>
+            <tr>
+              <th>Username</th>
+              <th>Email</th>
+              <th>Dealer ID</th>
+              <th>Dealer Name</th>
+              <th>City</th>
+              <th>State</th>
+              <th>Dealer Category</th>
+              <th>Cluster</th>
+              <th>ASM 1</th>
+              <th>ASM 2</th>
+              <th>Role</th>
+              <th>Department</th>
+              <th>Brand</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </section>
 
     <section class="card">
@@ -64,13 +81,12 @@
         </label>
       </div>
 
-      <button id="execute-btn" type="button">Execute</button>
+      <button id="execute-btn" type="button">Execute Bulk Enroll</button>
     </section>
 
     <section class="card">
       <h2>Output Summary</h2>
       <div id="status-box" class="status"></div>
-      <pre id="output-json"></pre>
     </section>
   </main>
 </body>

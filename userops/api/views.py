@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from userops.api.permissions import IsStaffUser
 from userops.api.serializers import BulkEnrollByMetadataSerializer, PreviewRequestSerializer
 from userops.services.bulk_enroll import forward_to_bulk_enroll
-from userops.services.meta_filter import extract_org, get_matched_profiles
+from userops.services.meta_filter import METADATA_FILTER_KEYS, extract_org, get_matched_profiles
 
 
 class UserPreviewByMetadataView(APIView):
@@ -16,16 +16,16 @@ class UserPreviewByMetadataView(APIView):
         serializer.is_valid(raise_exception=True)
 
         filters = serializer.validated_data["filters"]
-        limit = serializer.validated_data["limit"]
 
         matched_profiles = get_matched_profiles(filters)
         sample = []
-        for profile in matched_profiles[:limit]:
+        for profile in matched_profiles:
+            org = extract_org(profile)
             sample.append(
                 {
                     "username": profile.user.username,
                     "email": profile.user.email,
-                    "org": extract_org(profile),
+                    **{key: org.get(key, "") for key in METADATA_FILTER_KEYS},
                 }
             )
 

@@ -26,6 +26,7 @@ body {
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 16px;
+  overflow: hidden;
 }
 
 .grid {
@@ -80,6 +81,11 @@ button[disabled] {
   cursor: wait;
 }
 
+.table-wrap {
+  overflow-x: auto;
+  width: 100%;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -91,6 +97,12 @@ td {
   padding: 8px;
   text-align: left;
   vertical-align: top;
+}
+
+td.meta {
+  white-space: normal;
+  word-break: break-word;
+  max-width: 700px;
 }
 
 code,
