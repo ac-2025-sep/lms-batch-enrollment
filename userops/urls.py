@@ -1,12 +1,8 @@
-from django.urls import path
+from django.urls import include, path
 
-from userops.api.views import BulkEnrollByMetadataView, UserPreviewByMetadataView
+from . import views
 
 urlpatterns = [
-    path("users/preview", UserPreviewByMetadataView.as_view(), name="userops-users-preview"),
-    path(
-        "bulk-enroll/by-metadata",
-        BulkEnrollByMetadataView.as_view(),
-        name="userops-bulk-enroll-by-metadata",
-    ),
+    path("userops/", views.dashboard, name="userops-dashboard"),
+    path("api/userops/v1/", include("userops.urls_api")),
 ]

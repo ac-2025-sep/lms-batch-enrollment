@@ -21,6 +21,7 @@ It installs a staff-only API in LMS to:
 - URL: `/userops/`
 - APIs: `/api/userops/v1/...`
 - Access: You must be logged in as an LMS staff user.
+- Routing note: both UI and API are served via a single LMS plugin URL mount (`regex = "^"`).
 
 ## API Endpoints
 
