@@ -40,16 +40,25 @@
         <label>department <select id="filter-department"><option value="">All</option></select></label>
         <label>brand <select id="filter-brand"><option value="">All</option></select></label>
       </div>
-      <button id="preview-btn" type="button">Preview Users</button>
+      <div class="filter-actions">
+        <button id="preview-btn" type="button">Preview Users</button>
+        <button id="resetFiltersBtn" type="button" class="admin-btn outline-btn">Reset Filters</button>
+      </div>
     </section>
 
     <section class="card">
       <h2>Preview Results</h2>
       <p id="preview-count">Count: 0</p>
+      <div class="preview-actions">
+        <button id="selectAllBtn" type="button" class="admin-btn secondary-btn">Select All</button>
+        <button id="unselectAllBtn" type="button" class="admin-btn secondary-btn">Unselect All</button>
+        <span id="selectedCount" class="muted">Selected: 0</span>
+      </div>
       <div class="table-wrap">
         <table id="preview-table">
           <thead>
             <tr>
+              <th>Select</th>
               <th>Username</th>
               <th>Email</th>
               <th>Dealer ID</th>
@@ -92,6 +101,7 @@
         </label>
       </div>
 
+      <p id="execute-scope-hint" class="muted">Enrolling all matched users</p>
       <button id="execute-btn" type="button">Execute Bulk Enroll</button>
     </section>
 

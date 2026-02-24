@@ -20,6 +20,11 @@ class BulkEnrollByMetadataSerializer(serializers.Serializer):
     action = serializers.ChoiceField(choices=["enroll", "unenroll"], default="enroll")
     auto_enroll = serializers.BooleanField(default=True)
     email_students = serializers.BooleanField(default=False)
+    selected_identifiers = serializers.ListField(
+        child=serializers.CharField(allow_blank=False),
+        required=False,
+        allow_empty=True,
+    )
 
     def validate_filters(self, value):
         if not value:
@@ -33,6 +38,14 @@ class BulkEnrollByMetadataSerializer(serializers.Serializer):
             if not val_str:
                 raise serializers.ValidationError(f"Filter value for '{key_str}' must be non-empty.")
             normalized[key_str] = val_str
+        return normalized
+
+    def validate_selected_identifiers(self, value):
+        normalized = []
+        for raw in value:
+            identifier = str(raw).strip()
+            if identifier:
+                normalized.append(identifier)
         return normalized
 
     def validate(self, attrs):

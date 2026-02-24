@@ -31,6 +31,8 @@
     "brand",
   ];
 
+  const selectedIdentifiers = new Set();
+
   function getCookie(name) {
     const prefix = `${name}=`;
     const cookies = document.cookie ? document.cookie.split(";") : [];
@@ -50,6 +52,18 @@
       .filter(Boolean);
   }
 
+  function getUserIdentifier(user) {
+    const email = (user.email || "").trim();
+    if (email) {
+      return email;
+    }
+    const username = (user.username || "").trim();
+    if (username) {
+      return username;
+    }
+    return "";
+  }
+
   function collectFilters() {
     const filters = {};
     for (const key of FILTER_KEYS) {
@@ -61,10 +75,28 @@
     return filters;
   }
 
+  function clearStatus() {
+    const statusBox = document.getElementById("status-box");
+    statusBox.textContent = "";
+    statusBox.className = "status";
+  }
+
   function setStatus(message, level) {
     const statusBox = document.getElementById("status-box");
     statusBox.textContent = message;
     statusBox.className = `status ${level || "info"}`;
+  }
+
+  function updateSelectionCount() {
+    document.getElementById("selectedCount").textContent = `Selected: ${selectedIdentifiers.size}`;
+    document.getElementById("execute-scope-hint").textContent = selectedIdentifiers.size
+      ? "Enrolling selected users only"
+      : "Enrolling all matched users";
+  }
+
+  function clearSelectionState() {
+    selectedIdentifiers.clear();
+    updateSelectionCount();
   }
 
   function renderPreviewRows(sample) {
@@ -72,10 +104,62 @@
     body.innerHTML = "";
 
     for (const user of sample || []) {
+      const identifier = getUserIdentifier(user);
+      const hasIdentifier = Boolean(identifier);
+      const hasEmail = Boolean((user.email || "").trim());
       const row = document.createElement("tr");
-      row.innerHTML = PREVIEW_COLUMNS.map((column) => `<td class="meta">${user[column] || ""}</td>`).join("");
+
+      const checkboxCell = document.createElement("td");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.className = "user-select";
+
+      if (hasIdentifier) {
+        checkbox.dataset.identifier = identifier;
+        checkbox.dataset.email = (user.email || "").trim();
+        checkbox.dataset.username = (user.username || "").trim();
+        checkbox.addEventListener("change", function () {
+          if (checkbox.checked) {
+            selectedIdentifiers.add(identifier);
+          } else {
+            selectedIdentifiers.delete(identifier);
+          }
+          updateSelectionCount();
+        });
+      } else {
+        checkbox.disabled = true;
+        checkbox.title = "Cannot select user with no email or username";
+        checkboxCell.classList.add("no-identifier");
+        checkboxCell.textContent = "No email";
+      }
+
+      if (hasIdentifier) {
+        checkboxCell.appendChild(checkbox);
+        if (!hasEmail) {
+          const badge = document.createElement("span");
+          badge.className = "muted small";
+          badge.textContent = " (no email)";
+          checkboxCell.appendChild(badge);
+        }
+      }
+      row.appendChild(checkboxCell);
+
+      for (const column of PREVIEW_COLUMNS) {
+        const value = user[column] || "";
+        const cell = document.createElement("td");
+        cell.className = "meta";
+        cell.textContent = value;
+        row.appendChild(cell);
+      }
+
       body.appendChild(row);
     }
+  }
+
+  function resetPreviewResults() {
+    document.getElementById("preview-count").textContent = "Count: 0";
+    document.querySelector("#preview-table tbody").innerHTML = "";
+    clearSelectionState();
   }
 
   function populateFilterChoices(choices) {
@@ -175,6 +259,7 @@
         filters: collectFilters(),
       });
       document.getElementById("preview-count").textContent = `Count: ${result.count || 0}`;
+      clearSelectionState();
       renderPreviewRows(result.sample || []);
       setStatus("Preview loaded successfully.", "success");
     } catch (error) {
@@ -182,6 +267,39 @@
     } finally {
       previewBtn.disabled = false;
     }
+  }
+
+  function handleSelectAll() {
+    const checkboxes = document.querySelectorAll(".user-select");
+    for (const checkbox of checkboxes) {
+      if (checkbox.disabled) {
+        continue;
+      }
+      checkbox.checked = true;
+      if (checkbox.dataset.identifier) {
+        selectedIdentifiers.add(checkbox.dataset.identifier);
+      }
+    }
+    updateSelectionCount();
+  }
+
+  function handleUnselectAll() {
+    const checkboxes = document.querySelectorAll(".user-select");
+    for (const checkbox of checkboxes) {
+      checkbox.checked = false;
+    }
+    clearSelectionState();
+  }
+
+  function handleResetFilters() {
+    for (const key of FILTER_KEYS) {
+      const select = document.getElementById(`filter-${key}`);
+      if (select) {
+        select.value = "";
+      }
+    }
+    resetPreviewResults();
+    clearStatus();
   }
 
   async function handleExecute() {
@@ -199,18 +317,24 @@
       return;
     }
 
+    const payload = {
+      filters: collectFilters(),
+      courses,
+      cohorts,
+      action: document.getElementById("bulk-action").value,
+      auto_enroll: document.getElementById("bulk-auto_enroll").checked,
+      email_students: document.getElementById("bulk-email_students").checked,
+    };
+
+    if (selectedIdentifiers.size > 0) {
+      payload.selected_identifiers = Array.from(selectedIdentifiers);
+    }
+
     executeBtn.disabled = true;
     setStatus("Executing bulk operation...", "info");
 
     try {
-      const result = await postJSON("/api/userops/v1/bulk-enroll/by-metadata", {
-        filters: collectFilters(),
-        courses,
-        cohorts,
-        action: document.getElementById("bulk-action").value,
-        auto_enroll: document.getElementById("bulk-auto_enroll").checked,
-        email_students: document.getElementById("bulk-email_students").checked,
-      });
+      const result = await postJSON("/api/userops/v1/bulk-enroll/by-metadata", payload);
 
       const summary = [
         `matched_users: ${result.matched_users}`,
@@ -229,7 +353,11 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     loadMetadataChoices();
+    updateSelectionCount();
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
+    document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
+    document.getElementById("selectAllBtn").addEventListener("click", handleSelectAll);
+    document.getElementById("unselectAllBtn").addEventListener("click", handleUnselectAll);
   });
 })();
