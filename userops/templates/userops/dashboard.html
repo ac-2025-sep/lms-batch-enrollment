@@ -92,10 +92,22 @@
         <label class="inline"><input type="checkbox" id="bulk-email_students"> email_students</label>
       </div>
 
+      <div class="course-picker">
+        <label for="courseSearch"><strong>Select Course(s)</strong></label>
+        <input id="courseSearch" type="text" placeholder="Search courses..." class="course-search" />
+
+        <div id="courseList" class="course-list">
+          <!-- JS renders grouped checkboxes here -->
+        </div>
+
+        <div class="course-actions">
+          <button type="button" id="selectAllCoursesBtn" class="admin-btn secondary-btn">Select All</button>
+          <button type="button" id="clearAllCoursesBtn" class="admin-btn secondary-btn">Clear All</button>
+          <span id="selectedCoursesCount" class="muted">Selected: 0</span>
+        </div>
+      </div>
+
       <div class="grid">
-        <label>courses (one per line)
-          <textarea id="bulk-courses" rows="4" placeholder="course-v1:edX+Demo+2025"></textarea>
-        </label>
         <label>cohorts (optional, one per line)
           <textarea id="bulk-cohorts" rows="4" placeholder="cohortA"></textarea>
         </label>

@@ -64,6 +64,14 @@
     return "";
   }
 
+  function toSafeCourseId(courseId, index) {
+    const normalized = String(courseId || "")
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    return normalized ? `${normalized}_${index}` : `course_${index}`;
+  }
+
   function collectFilters() {
     const filters = {};
     for (const key of FILTER_KEYS) {
@@ -97,6 +105,118 @@
   function clearSelectionState() {
     selectedIdentifiers.clear();
     updateSelectionCount();
+  }
+
+  function updateSelectedCoursesCount() {
+    const selected = document.querySelectorAll(".course-checkbox:checked").length;
+    document.getElementById("selectedCoursesCount").textContent = `Selected: ${selected}`;
+  }
+
+  function renderCourses(courses) {
+    const courseList = document.getElementById("courseList");
+    courseList.innerHTML = "";
+
+    if (!courses.length) {
+      courseList.textContent = "No courses available.";
+      updateSelectedCoursesCount();
+      return;
+    }
+
+    const grouped = new Map();
+    for (const course of courses) {
+      const org = (course.org || "Unknown").trim() || "Unknown";
+      if (!grouped.has(org)) {
+        grouped.set(org, []);
+      }
+      grouped.get(org).push(course);
+    }
+
+    let index = 0;
+    for (const [org, groupCourses] of grouped.entries()) {
+      const header = document.createElement("div");
+      header.className = "course-org-header";
+      header.dataset.org = org;
+      header.textContent = org;
+      courseList.appendChild(header);
+
+      for (const course of groupCourses) {
+        const item = document.createElement("div");
+        item.className = "course-item";
+        item.dataset.org = org;
+        item.dataset.search = `${course.display_name || ""} ${course.id || ""} ${course.run || ""} ${course.org || ""}`.toLowerCase();
+
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.className = "course-checkbox";
+        input.id = `course_${toSafeCourseId(course.id, index)}`;
+        input.value = course.id;
+        input.addEventListener("change", updateSelectedCoursesCount);
+
+        const label = document.createElement("label");
+        label.htmlFor = input.id;
+
+        const title = document.createElement("div");
+        const strong = document.createElement("strong");
+        strong.textContent = course.display_name || course.id;
+        title.appendChild(strong);
+
+        const meta = document.createElement("div");
+        meta.className = "course-meta";
+        meta.textContent = `${course.id} (${course.run || ""})`;
+
+        label.appendChild(title);
+        label.appendChild(meta);
+        item.appendChild(input);
+        item.appendChild(label);
+        courseList.appendChild(item);
+        index += 1;
+      }
+    }
+    updateSelectedCoursesCount();
+  }
+
+  function filterCourses() {
+    const query = document.getElementById("courseSearch").value.trim().toLowerCase();
+    const items = Array.from(document.querySelectorAll(".course-item"));
+    const headers = Array.from(document.querySelectorAll(".course-org-header"));
+
+    const visibleOrgCounts = new Map();
+    for (const item of items) {
+      const isVisible = !query || item.dataset.search.includes(query);
+      item.style.display = isVisible ? "" : "none";
+      if (isVisible) {
+        const org = item.dataset.org;
+        visibleOrgCounts.set(org, (visibleOrgCounts.get(org) || 0) + 1);
+      }
+    }
+
+    for (const header of headers) {
+      const org = header.dataset.org;
+      header.style.display = visibleOrgCounts.get(org) ? "" : "none";
+    }
+  }
+
+  function handleSelectAllCourses() {
+    const courseItems = document.querySelectorAll(".course-item");
+    for (const item of courseItems) {
+      if (item.style.display === "none") {
+        continue;
+      }
+      const checkbox = item.querySelector(".course-checkbox");
+      if (!checkbox) {
+        continue;
+      }
+      checkbox.checked = true;
+    }
+    updateSelectedCoursesCount();
+  }
+
+  function handleClearAllCourses() {
+    const checkboxes = document.querySelectorAll(".course-checkbox");
+    for (const checkbox of checkboxes) {
+      checkbox.checked = false;
+    }
+    updateSelectedCoursesCount();
   }
 
   function renderPreviewRows(sample) {
@@ -248,6 +368,17 @@
     }
   }
 
+  async function loadCourses() {
+    try {
+      const result = await getJSON("/api/userops/v1/courses");
+      const courses = Array.isArray(result.courses) ? result.courses : [];
+      renderCourses(courses);
+      filterCourses();
+    } catch (error) {
+      setStatus(`Failed to load courses. ${formatError(error)}`, "error");
+    }
+  }
+
   async function handlePreview() {
     const previewBtn = document.getElementById("preview-btn");
 
@@ -304,22 +435,22 @@
 
   async function handleExecute() {
     const executeBtn = document.getElementById("execute-btn");
-    const courses = nonEmptyLines(document.getElementById("bulk-courses").value);
+    const selectedCourses = Array.from(document.querySelectorAll(".course-checkbox:checked")).map((cb) => cb.value);
     const cohorts = nonEmptyLines(document.getElementById("bulk-cohorts").value);
 
-    if (!courses.length) {
-      setStatus("Please provide at least one course key.", "error");
+    if (!selectedCourses.length) {
+      setStatus("Select at least one course", "error");
       return;
     }
 
-    if (cohorts.length && cohorts.length !== courses.length) {
+    if (cohorts.length && cohorts.length !== selectedCourses.length) {
       setStatus("If cohorts are provided, their count must match courses count.", "error");
       return;
     }
 
     const payload = {
       filters: collectFilters(),
-      courses,
+      courses: selectedCourses,
       cohorts,
       action: document.getElementById("bulk-action").value,
       auto_enroll: document.getElementById("bulk-auto_enroll").checked,
@@ -353,11 +484,15 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     loadMetadataChoices();
+    loadCourses();
     updateSelectionCount();
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
     document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
     document.getElementById("selectAllBtn").addEventListener("click", handleSelectAll);
     document.getElementById("unselectAllBtn").addEventListener("click", handleUnselectAll);
+    document.getElementById("courseSearch").addEventListener("input", filterCourses);
+    document.getElementById("selectAllCoursesBtn").addEventListener("click", handleSelectAllCourses);
+    document.getElementById("clearAllCoursesBtn").addEventListener("click", handleClearAllCourses);
   });
 })();
