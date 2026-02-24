@@ -42,14 +42,19 @@ class BulkEnrollByMetadataView(APIView):
         data = serializer.validated_data
         matched_profiles = get_matched_profiles(data["filters"])
 
-        identifiers = []
-        skipped_no_email = 0
-        for profile in matched_profiles:
-            email = (profile.user.email or "").strip()
-            if email:
-                identifiers.append(email)
-            else:
-                skipped_no_email += 1
+        selected_identifiers = data.get("selected_identifiers") or []
+        if selected_identifiers:
+            identifiers = list(dict.fromkeys(selected_identifiers))
+            skipped_no_email = 0
+        else:
+            identifiers = []
+            skipped_no_email = 0
+            for profile in matched_profiles:
+                email = (profile.user.email or "").strip()
+                if email:
+                    identifiers.append(email)
+                else:
+                    skipped_no_email += 1
 
         upstream_status = status.HTTP_400_BAD_REQUEST
         upstream_body = {"detail": "No matching users with email found."}

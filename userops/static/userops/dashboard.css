@@ -129,7 +129,6 @@ pre {
   color: #cf222e;
 }
 
-
 .dashboard-header {
   display: flex;
   justify-content: space-between;
@@ -143,6 +142,21 @@ pre {
   align-items: center;
 }
 
+.filter-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
 .admin-btn {
   display: inline-block;
   padding: 8px 14px;
@@ -152,6 +166,7 @@ pre {
   line-height: 1;
   color: #fff;
   background: #0d6efd;
+  border: 1px solid #0d6efd;
 }
 
 .admin-btn:hover {
@@ -160,8 +175,31 @@ pre {
 
 .secondary-btn {
   background: #6c757d;
+  border-color: #6c757d;
 }
 
 .secondary-btn:hover {
   background: #5c636a;
+}
+
+.outline-btn {
+  background: transparent;
+  color: #0d6efd;
+}
+
+.outline-btn:hover {
+  background: #e9f2ff;
+}
+
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.small {
+  font-size: 12px;
+}
+
+.no-identifier {
+  color: var(--muted);
 }
