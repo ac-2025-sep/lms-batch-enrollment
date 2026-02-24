@@ -486,6 +486,12 @@
     loadMetadataChoices();
     loadCourses();
     updateSelectionCount();
+    const backBtn = document.getElementById("goBackBtn");
+    if (backBtn) {
+      backBtn.addEventListener("click", function () {
+        window.history.back();
+      });
+    }
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
     document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
