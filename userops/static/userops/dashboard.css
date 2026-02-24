@@ -203,3 +203,57 @@ pre {
 .no-identifier {
   color: var(--muted);
 }
+
+.course-picker { margin-top: 14px; }
+
+.course-search {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #d0d7de;
+  border-radius: 6px;
+  margin: 8px 0 10px 0;
+}
+
+.course-list {
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 10px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.course-org-header {
+  font-weight: 700;
+  margin: 12px 0 6px 0;
+  padding-top: 8px;
+  border-top: 1px solid #eee;
+}
+
+.course-org-header:first-child {
+  border-top: none;
+  padding-top: 0;
+}
+
+.course-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 2px;
+}
+
+.course-item label {
+  cursor: pointer;
+}
+
+.course-item .course-meta {
+  color: #6c757d;
+  font-size: 12px;
+}
+
+.course-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 10px;
+}

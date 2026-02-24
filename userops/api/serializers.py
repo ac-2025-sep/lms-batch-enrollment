@@ -7,11 +7,7 @@ class PreviewRequestSerializer(serializers.Serializer):
 
 class BulkEnrollByMetadataSerializer(serializers.Serializer):
     filters = serializers.DictField(child=serializers.CharField(allow_blank=False), required=True)
-    courses = serializers.ListField(
-        child=serializers.CharField(allow_blank=False),
-        required=True,
-        allow_empty=False,
-    )
+    courses = serializers.JSONField(required=True)
     cohorts = serializers.ListField(
         child=serializers.CharField(allow_blank=False),
         required=False,
@@ -46,6 +42,24 @@ class BulkEnrollByMetadataSerializer(serializers.Serializer):
             identifier = str(raw).strip()
             if identifier:
                 normalized.append(identifier)
+        return normalized
+
+    def validate_courses(self, value):
+        if isinstance(value, str):
+            candidates = value.split(",")
+        elif isinstance(value, list):
+            candidates = value
+        else:
+            raise serializers.ValidationError("courses must be a list of course keys or comma-separated string.")
+
+        normalized = []
+        for raw in candidates:
+            course = str(raw).strip()
+            if course:
+                normalized.append(course)
+
+        if not normalized:
+            raise serializers.ValidationError("At least one course must be provided.")
         return normalized
 
     def validate(self, attrs):
