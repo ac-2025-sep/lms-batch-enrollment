@@ -157,6 +157,24 @@ pre {
   margin-bottom: 10px;
 }
 
+.preview-container {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+}
+
+.preview-container table thead {
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  z-index: 1;
+}
+
+.preview-container table tbody tr:hover {
+  background-color: #f5f7ff;
+}
+
 .admin-btn {
   display: inline-block;
   padding: 8px 14px;
