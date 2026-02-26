@@ -11,7 +11,7 @@ It installs a staff-only API in LMS to:
 
 - User metadata is read from `common.djangoapps.student.models.UserProfile.meta` (a `TextField`).
 - Filtering is done **in Python** by parsing JSON safely (`invalid/empty => {}`).
-- Filters are applied against `meta["org"]` using case-insensitive, trimmed string comparison.
+- Filters are applied against `meta["org"]` using case-insensitive, trimmed string comparison with **OR within each metadata key** and **AND across metadata keys**.
 - Matching users are converted to email identifiers (users with empty email are skipped).
 - Enrollment is forwarded to Open edX `BulkEnrollView` (no custom enrollment DB writes).
 
@@ -35,7 +35,10 @@ Request:
 
 ```json
 {
-  "filters": {"cluster": "NORTH 1", "asm_1": "ASM1"},
+  "filters": {
+    "cluster": ["NORTH 1", "NORTH 2"],
+    "asm_1": ["ASM1"]
+  },
   "limit": 50
 }
 ```
@@ -63,7 +66,10 @@ Request:
 
 ```json
 {
-  "filters": {"cluster": "NORTH 1", "asm_1": "ASM1"},
+  "filters": {
+    "cluster": ["NORTH 1", "NORTH 2"],
+    "asm_1": ["ASM1"]
+  },
   "courses": ["course-v1:edX+Demo+123", "course-v1:edX+Demo2+456"],
   "cohorts": ["cohortA", "cohortB"],
   "action": "enroll",
@@ -107,3 +113,25 @@ This package exposes the standard Open edX entry point:
 
 - Staff-only permissions are enforced on both endpoints.
 - This app intentionally reuses Open edX built-in bulk enrollment endpoint logic via `BulkEnrollView`.
+
+
+## Metadata filtering contract (strict)
+
+Both `POST /api/userops/v1/users/preview` and `POST /api/userops/v1/bulk-enroll/by-metadata` require:
+
+- `filters` must be present and non-empty.
+- Every `filters` key must map to an **array of strings** (`Dict[str, List[str]]`).
+- Empty arrays are rejected.
+- Blank strings are rejected.
+- Non-array values (for example `"cluster": "NORTH 1"`) are rejected.
+
+Semantics:
+
+- OR within a key: `cluster: ["NORTH 1", "NORTH 2"]`
+- AND across keys: `cluster in (...) AND role in (...)`
+
+Frontend behavior follows the same contract:
+
+- Metadata filters use multi-select controls (Tom Select) for searchable selection.
+- Keys with zero selected values are omitted from payload.
+- No `"All"` sentinel value is sent.
