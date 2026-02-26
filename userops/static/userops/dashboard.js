@@ -32,6 +32,7 @@
   ];
 
   const selectedIdentifiers = new Set();
+  const tomSelectByKey = new Map();
 
   function getCookie(name) {
     const prefix = `${name}=`;
@@ -74,13 +75,38 @@
 
   function collectFilters() {
     const filters = {};
-    for (const key of FILTER_KEYS) {
-      const value = document.getElementById(`filter-${key}`).value.trim();
-      if (value) {
-        filters[key] = value;
+    document.querySelectorAll("select.meta-filter").forEach((select) => {
+      const key = select.id.replace("filter-", "");
+      const values = Array.from(select.selectedOptions)
+        .map((option) => option.value.trim())
+        .filter(Boolean);
+
+      if (values.length > 0) {
+        filters[key] = values;
       }
-    }
+    });
     return filters;
+  }
+
+  function initializeTomSelect(select, key) {
+    const existingInstance = tomSelectByKey.get(key);
+    if (existingInstance) {
+      existingInstance.destroy();
+      tomSelectByKey.delete(key);
+    }
+
+    if (typeof TomSelect === "undefined") {
+      return;
+    }
+
+    const instance = new TomSelect(select, {
+      plugins: ["remove_button"],
+      persist: false,
+      create: false,
+      closeAfterSelect: false,
+      maxOptions: null,
+    });
+    tomSelectByKey.set(key, instance);
   }
 
   function clearStatus() {
@@ -288,7 +314,7 @@
       if (!select) {
         continue;
       }
-      select.innerHTML = '<option value="">All</option>';
+      select.innerHTML = "";
       const values = Array.isArray(choices[key]) ? choices[key] : [];
       for (const value of values) {
         const option = document.createElement("option");
@@ -296,6 +322,8 @@
         option.textContent = value;
         select.appendChild(option);
       }
+
+      initializeTomSelect(select, key);
     }
   }
 
@@ -354,7 +382,10 @@
       return `400 Bad Request: ${error.detail}`;
     }
     if (error && error.detail) {
-      return `Request failed: ${error.detail}`;
+      return `Request failed: ${typeof error.detail === "string" ? error.detail : JSON.stringify(error.detail)}`;
+    }
+    if (error && error.message) {
+      return `Unexpected error while processing request: ${error.message}`;
     }
     return "Unexpected error while processing request.";
   }
@@ -422,11 +453,40 @@
     clearSelectionState();
   }
 
-  function handleResetFilters() {
+
+  function handleSelectAllFilters() {
     for (const key of FILTER_KEYS) {
       const select = document.getElementById(`filter-${key}`);
+      if (!select) {
+        continue;
+      }
+
+      const allValues = Array.from(select.options).map((option) => option.value);
+      const instance = tomSelectByKey.get(key);
+      if (instance) {
+        instance.setValue(allValues, true);
+      } else {
+        for (const option of select.options) {
+          option.selected = true;
+        }
+      }
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  function handleResetFilters() {
+    for (const key of FILTER_KEYS) {
+      const instance = tomSelectByKey.get(key);
+      const select = document.getElementById(`filter-${key}`);
+      if (instance) {
+        instance.clear(true);
+      } else if (select) {
+        for (const option of select.options) {
+          option.selected = false;
+        }
+      }
       if (select) {
-        select.value = "";
+        select.dispatchEvent(new Event("change", { bubbles: true }));
       }
     }
     resetPreviewResults();
@@ -494,6 +554,7 @@
     }
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
+    document.getElementById("selectAllFiltersBtn").addEventListener("click", handleSelectAllFilters);
     document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
     document.getElementById("selectAllBtn").addEventListener("click", handleSelectAll);
     document.getElementById("unselectAllBtn").addEventListener("click", handleUnselectAll);
