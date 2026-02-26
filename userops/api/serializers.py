@@ -1,13 +1,14 @@
 from rest_framework import serializers
 
 
-FILTERS_FIELD = serializers.DictField(
-    child=serializers.ListField(
-        child=serializers.CharField(allow_blank=False),
-        allow_empty=False,
-    ),
-    required=True,
-)
+def build_filters_field():
+    return serializers.DictField(
+        child=serializers.ListField(
+            child=serializers.CharField(allow_blank=False),
+            allow_empty=False,
+        ),
+        required=True,
+    )
 
 
 class MetadataFiltersMixin:
@@ -38,11 +39,11 @@ class MetadataFiltersMixin:
 
 
 class PreviewRequestSerializer(MetadataFiltersMixin, serializers.Serializer):
-    filters = FILTERS_FIELD
+    filters = build_filters_field()
 
 
 class BulkEnrollByMetadataSerializer(MetadataFiltersMixin, serializers.Serializer):
-    filters = FILTERS_FIELD
+    filters = build_filters_field()
     courses = serializers.JSONField(required=True)
     cohorts = serializers.ListField(
         child=serializers.CharField(allow_blank=False),

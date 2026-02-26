@@ -75,7 +75,7 @@
 
   function collectFilters() {
     const filters = {};
-    document.querySelectorAll(".meta-filter").forEach((select) => {
+    document.querySelectorAll("select.meta-filter").forEach((select) => {
       const key = select.id.replace("filter-", "");
       const values = Array.from(select.selectedOptions)
         .map((option) => option.value.trim())
@@ -382,7 +382,10 @@
       return `400 Bad Request: ${error.detail}`;
     }
     if (error && error.detail) {
-      return `Request failed: ${error.detail}`;
+      return `Request failed: ${typeof error.detail === "string" ? error.detail : JSON.stringify(error.detail)}`;
+    }
+    if (error && error.message) {
+      return `Unexpected error while processing request: ${error.message}`;
     }
     return "Unexpected error while processing request.";
   }
@@ -448,6 +451,27 @@
       checkbox.checked = false;
     }
     clearSelectionState();
+  }
+
+
+  function handleSelectAllFilters() {
+    for (const key of FILTER_KEYS) {
+      const select = document.getElementById(`filter-${key}`);
+      if (!select) {
+        continue;
+      }
+
+      const allValues = Array.from(select.options).map((option) => option.value);
+      const instance = tomSelectByKey.get(key);
+      if (instance) {
+        instance.setValue(allValues, true);
+      } else {
+        for (const option of select.options) {
+          option.selected = true;
+        }
+      }
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    }
   }
 
   function handleResetFilters() {
@@ -530,6 +554,7 @@
     }
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
+    document.getElementById("selectAllFiltersBtn").addEventListener("click", handleSelectAllFilters);
     document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
     document.getElementById("selectAllBtn").addEventListener("click", handleSelectAll);
     document.getElementById("unselectAllBtn").addEventListener("click", handleUnselectAll);
