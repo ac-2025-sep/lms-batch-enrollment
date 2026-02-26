@@ -454,23 +454,47 @@
   }
 
 
-  function handleSelectAllFilters() {
+
+
+  function selectAllFilterValuesForKey(key) {
+    const select = document.getElementById(`filter-${key}`);
+    if (!select) {
+      return;
+    }
+
+    const allValues = Array.from(select.options).map((option) => option.value);
+    const instance = tomSelectByKey.get(key);
+    if (instance) {
+      instance.setValue(allValues, true);
+    } else {
+      for (const option of select.options) {
+        option.selected = true;
+      }
+    }
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function addPerFilterSelectAllButtons() {
     for (const key of FILTER_KEYS) {
       const select = document.getElementById(`filter-${key}`);
-      if (!select) {
+      if (!select || !select.parentElement) {
         continue;
       }
 
-      const allValues = Array.from(select.options).map((option) => option.value);
-      const instance = tomSelectByKey.get(key);
-      if (instance) {
-        instance.setValue(allValues, true);
-      } else {
-        for (const option of select.options) {
-          option.selected = true;
-        }
+      const existingButton = select.parentElement.querySelector(`button[data-filter-key="${key}"]`);
+      if (existingButton) {
+        continue;
       }
-      select.dispatchEvent(new Event("change", { bubbles: true }));
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "admin-btn secondary-btn";
+      button.dataset.filterKey = key;
+      button.textContent = "Select all";
+      button.addEventListener("click", function () {
+        selectAllFilterValuesForKey(key);
+      });
+      select.parentElement.appendChild(button);
     }
   }
 
@@ -545,6 +569,7 @@
   document.addEventListener("DOMContentLoaded", function () {
     loadMetadataChoices();
     loadCourses();
+    addPerFilterSelectAllButtons();
     updateSelectionCount();
     const backBtn = document.getElementById("goBackBtn");
     if (backBtn) {
