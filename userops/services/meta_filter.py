@@ -38,17 +38,19 @@ def extract_org(profile) -> dict:
     return org if isinstance(org, dict) else {}
 
 
-def user_matches_filters(profile, filters: dict[str, str]) -> bool:
+def user_matches_filters(profile, filters: dict[str, list[str]]) -> bool:
     org = extract_org(profile)
-    for key, expected_value in filters.items():
-        if key not in org:
-            return False
-        if _normalize(org.get(key)) != _normalize(expected_value):
+    normalized_user_meta = {key: _normalize(value) for key, value in org.items()}
+
+    for key, allowed_values in filters.items():
+        normalized_allowed_values = [_normalize(value) for value in allowed_values]
+        user_value = normalized_user_meta.get(key)
+        if user_value not in normalized_allowed_values:
             return False
     return True
 
 
-def get_matched_profiles(filters: dict[str, str]):
+def get_matched_profiles(filters: dict[str, list[str]]):
     from common.djangoapps.student.models import UserProfile
 
     profiles = UserProfile.objects.select_related("user").all()
