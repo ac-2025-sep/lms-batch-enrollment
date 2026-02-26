@@ -6,6 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>UserOps Dashboard</title>
   <link rel="stylesheet" href="{% static 'userops/dashboard.css' %}">
+  <link href="https://cdn.jsdelivr.net/npm/tom-select@2.5.2/dist/css/tom-select.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/tom-select@2.5.2/dist/js/tom-select.complete.min.js"></script>
   <script src="{% static 'userops/dashboard.js' %}" defer></script>
 </head>
 <body>
@@ -29,19 +31,19 @@
     <section class="card">
       <h2>Metadata Filters</h2>
       <div class="grid">
-        <label>dealer_id <select id="filter-dealer_id"><option value="">All</option></select></label>
-        <label>champion_name <select id="filter-champion_name"><option value="">All</option></select></label>
-        <label>champion_mobile <select id="filter-champion_mobile"><option value="">All</option></select></label>
-        <label>dealer_name <select id="filter-dealer_name"><option value="">All</option></select></label>
-        <label>city <select id="filter-city"><option value="">All</option></select></label>
-        <label>state <select id="filter-state"><option value="">All</option></select></label>
-        <label>dealer_category <select id="filter-dealer_category"><option value="">All</option></select></label>
-        <label>cluster <select id="filter-cluster"><option value="">All</option></select></label>
-        <label>asm_1 <select id="filter-asm_1"><option value="">All</option></select></label>
-        <label>asm_2 <select id="filter-asm_2"><option value="">All</option></select></label>
-        <label>role <select id="filter-role"><option value="">All</option></select></label>
-        <label>department <select id="filter-department"><option value="">All</option></select></label>
-        <label>brand <select id="filter-brand"><option value="">All</option></select></label>
+        <label>dealer_id <select id="filter-dealer_id" class="meta-filter" multiple size="6"></select></label>
+        <label>champion_name <select id="filter-champion_name" class="meta-filter" multiple size="6"></select></label>
+        <label>champion_mobile <select id="filter-champion_mobile" class="meta-filter" multiple size="6"></select></label>
+        <label>dealer_name <select id="filter-dealer_name" class="meta-filter" multiple size="6"></select></label>
+        <label>city <select id="filter-city" class="meta-filter" multiple size="6"></select></label>
+        <label>state <select id="filter-state" class="meta-filter" multiple size="6"></select></label>
+        <label>dealer_category <select id="filter-dealer_category" class="meta-filter" multiple size="6"></select></label>
+        <label>cluster <select id="filter-cluster" class="meta-filter" multiple size="6"></select></label>
+        <label>asm_1 <select id="filter-asm_1" class="meta-filter" multiple size="6"></select></label>
+        <label>asm_2 <select id="filter-asm_2" class="meta-filter" multiple size="6"></select></label>
+        <label>role <select id="filter-role" class="meta-filter" multiple size="6"></select></label>
+        <label>department <select id="filter-department" class="meta-filter" multiple size="6"></select></label>
+        <label>brand <select id="filter-brand" class="meta-filter" multiple size="6"></select></label>
       </div>
       <div class="filter-actions">
         <button id="preview-btn" type="button">Preview Users</button>

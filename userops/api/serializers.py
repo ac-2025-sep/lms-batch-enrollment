@@ -1,12 +1,48 @@
 from rest_framework import serializers
 
 
-class PreviewRequestSerializer(serializers.Serializer):
-    filters = serializers.DictField(child=serializers.CharField(allow_blank=False), required=True)
+FILTERS_FIELD = serializers.DictField(
+    child=serializers.ListField(
+        child=serializers.CharField(allow_blank=False),
+        allow_empty=False,
+    ),
+    required=True,
+)
 
 
-class BulkEnrollByMetadataSerializer(serializers.Serializer):
-    filters = serializers.DictField(child=serializers.CharField(allow_blank=False), required=True)
+class MetadataFiltersMixin:
+    def validate_filters(self, value):
+        if not value:
+            raise serializers.ValidationError("At least one filter must be provided.")
+
+        normalized = {}
+        for key, raw_values in value.items():
+            key_str = str(key).strip()
+            if not key_str:
+                raise serializers.ValidationError("Filter keys must be non-empty strings.")
+
+            if not isinstance(raw_values, list):
+                raise serializers.ValidationError({key_str: "Expected an array of strings."})
+            if not raw_values:
+                raise serializers.ValidationError({key_str: "Filter arrays must not be empty."})
+
+            values = []
+            for raw in raw_values:
+                value_str = str(raw).strip()
+                if not value_str:
+                    raise serializers.ValidationError({key_str: "Filter values must be non-empty strings."})
+                values.append(value_str)
+
+            normalized[key_str] = values
+        return normalized
+
+
+class PreviewRequestSerializer(MetadataFiltersMixin, serializers.Serializer):
+    filters = FILTERS_FIELD
+
+
+class BulkEnrollByMetadataSerializer(MetadataFiltersMixin, serializers.Serializer):
+    filters = FILTERS_FIELD
     courses = serializers.JSONField(required=True)
     cohorts = serializers.ListField(
         child=serializers.CharField(allow_blank=False),
@@ -21,20 +57,6 @@ class BulkEnrollByMetadataSerializer(serializers.Serializer):
         required=False,
         allow_empty=True,
     )
-
-    def validate_filters(self, value):
-        if not value:
-            raise serializers.ValidationError("At least one filter must be provided.")
-        normalized = {}
-        for key, raw in value.items():
-            key_str = str(key).strip()
-            if not key_str:
-                raise serializers.ValidationError("Filter keys must be non-empty strings.")
-            val_str = str(raw).strip()
-            if not val_str:
-                raise serializers.ValidationError(f"Filter value for '{key_str}' must be non-empty.")
-            normalized[key_str] = val_str
-        return normalized
 
     def validate_selected_identifiers(self, value):
         normalized = []
