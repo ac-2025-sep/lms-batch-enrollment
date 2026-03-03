@@ -16,7 +16,6 @@ It installs a staff-only API in LMS to:
 - Enrollment is forwarded to Open edX `BulkEnrollView` (no custom enrollment DB writes).
 
 - Metadata filter keys/values in the dashboard are discovered dynamically from `UserProfile.meta["org"]` via `/api/userops/v1/metadata/choices`; UI controls are not hardcoded to a fixed key list.
-- Metadata filter UI keeps known baseline keys available even when a key currently has no values in profile metadata, while still including newly discovered keys dynamically.
 
 
 ## UserOps Dashboard (Staff Only)

@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from userops.api.permissions import IsStaffUser
 from userops.services.meta_filter import extract_org
 
-CACHE_KEY = "userops:metadata_choices:v3"
+CACHE_KEY = "userops:metadata_choices:v2"
 CACHE_TTL_SECONDS = 300
 
 
@@ -50,9 +50,8 @@ class MetadataChoicesView(APIView):
                     continue
                 values_by_key.setdefault(key_str, set()).add(value)
 
-        discovered_keys = set(values_by_key.keys())
-        keys = sorted(set(METADATA_FILTER_KEYS).union(discovered_keys))
-        choices = {key: sorted(values_by_key.get(key, set())) for key in keys}
+        keys = sorted(values_by_key.keys())
+        choices = {key: sorted(values_by_key[key]) for key in keys}
         payload = {"choices": choices, "keys": keys}
         cache.set(CACHE_KEY, payload, CACHE_TTL_SECONDS)
         return Response(payload)
