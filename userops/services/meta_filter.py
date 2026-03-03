@@ -10,8 +10,6 @@ METADATA_FILTER_KEYS = [
     "state",
     "dealer_category",
     "cluster",
-    "asm_1",
-    "asm_2",
     "role",
     "department",
     "brand",
