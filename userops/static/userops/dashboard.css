@@ -276,11 +276,21 @@ pre {
   margin-top: 10px;
 }
 
+.ts-dropdown .ts-dropdown-content {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
 .ts-select-all-action {
   border-bottom: 1px solid #e5e7eb;
   padding: 6px 8px;
   margin-bottom: 4px;
   background: #f8fafc;
+  display: flex;
+  gap: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 .ts-select-all-btn {

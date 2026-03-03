@@ -1,22 +1,6 @@
 (function () {
   let metadataFilterKeys = [];
 
-  const DEFAULT_METADATA_FILTER_KEYS = [
-    "dealer_id",
-    "champion_name",
-    "champion_mobile",
-    "dealer_name",
-    "city",
-    "state",
-    "dealer_category",
-    "cluster",
-    "asm",
-    "rsm",
-    "role",
-    "department",
-    "brand",
-  ];
-
   const selectedIdentifiers = new Set();
   const tomSelectByKey = new Map();
 
@@ -130,7 +114,7 @@
     return filters;
   }
 
-  function ensureDropdownSelectAllAction(instance, select, key) {
+  function ensureDropdownFilterActions(instance, select, key) {
     const dropdownContent = instance.dropdown_content;
     if (!dropdownContent) {
       return;
@@ -145,15 +129,15 @@
     actionWrap.className = "ts-select-all-action";
     actionWrap.dataset.filterKey = key;
 
-    const actionButton = document.createElement("button");
-    actionButton.type = "button";
-    actionButton.className = "ts-select-all-btn";
-    actionButton.textContent = "Select all";
-    actionButton.addEventListener("mousedown", function (event) {
+    const selectAllButton = document.createElement("button");
+    selectAllButton.type = "button";
+    selectAllButton.className = "ts-select-all-btn";
+    selectAllButton.textContent = "Select All";
+    selectAllButton.addEventListener("mousedown", function (event) {
       event.preventDefault();
       event.stopPropagation();
     });
-    actionButton.addEventListener("click", function (event) {
+    selectAllButton.addEventListener("click", function (event) {
       event.preventDefault();
       event.stopPropagation();
 
@@ -163,7 +147,25 @@
       instance.refreshOptions(false);
     });
 
-    actionWrap.appendChild(actionButton);
+    const clearButton = document.createElement("button");
+    clearButton.type = "button";
+    clearButton.className = "ts-select-all-btn";
+    clearButton.textContent = "Clear";
+    clearButton.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    clearButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      instance.clear(true);
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      instance.refreshOptions(false);
+    });
+
+    actionWrap.appendChild(selectAllButton);
+    actionWrap.appendChild(clearButton);
     dropdownContent.prepend(actionWrap);
   }
 
@@ -185,10 +187,10 @@
       closeAfterSelect: false,
       maxOptions: null,
       onDropdownOpen: function () {
-        ensureDropdownSelectAllAction(instance, select, key);
+        ensureDropdownFilterActions(instance, select, key);
       },
     });
-    ensureDropdownSelectAllAction(instance, select, key);
+    ensureDropdownFilterActions(instance, select, key);
     tomSelectByKey.set(key, instance);
   }
 
@@ -252,7 +254,7 @@
         const item = document.createElement("div");
         item.className = "course-item";
         item.dataset.org = org;
-        item.dataset.search = `${course.display_name || ""} ${course.id || ""} ${course.run || ""} ${course.org || ""}`.toLowerCase();
+        item.dataset.search = `${course.display_name || ""} ${course.name || ""} ${course.course_key || ""} ${course.id || ""} ${course.run || ""} ${course.org || ""}`.toLowerCase();
 
         const input = document.createElement("input");
         input.type = "checkbox";
@@ -492,7 +494,7 @@
       const result = await getJSON("/api/userops/v1/metadata/choices");
       populateFilterChoices(result.choices || {}, result.keys || []);
     } catch (error) {
-      populateFilterChoices({}, DEFAULT_METADATA_FILTER_KEYS);
+      populateFilterChoices({}, []);
       setStatus(`Failed to load filter choices. ${formatError(error)}`, "error");
     }
   }
@@ -536,6 +538,10 @@
       if (checkbox.disabled) {
         continue;
       }
+      const row = checkbox.closest("tr");
+      if (row && row.style.display === "none") {
+        continue;
+      }
       checkbox.checked = true;
       if (checkbox.dataset.identifier) {
         selectedIdentifiers.add(checkbox.dataset.identifier);
@@ -550,26 +556,6 @@
       checkbox.checked = false;
     }
     clearSelectionState();
-  }
-
-
-
-
-
-
-  function addPerFilterSelectAllButtons() {
-    for (const key of metadataFilterKeys) {
-      const select = document.getElementById(`filter-${key}`);
-      const instance = tomSelectByKey.get(key);
-      if (instance) {
-        instance.setValue(Object.keys(instance.options), true);
-      } else if (select) {
-        for (const option of select.options) {
-          option.selected = true;
-        }
-        select.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-    }
   }
 
   function handleResetFilters() {
@@ -587,6 +573,19 @@
         select.dispatchEvent(new Event("change", { bubbles: true }));
       }
     }
+
+    const courseSearch = document.getElementById("courseSearch");
+    if (courseSearch) {
+      courseSearch.value = "";
+      filterCourses();
+    }
+
+    const userSearch = document.getElementById("userSearch");
+    if (userSearch) {
+      userSearch.value = "";
+      userSearch.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+
     resetPreviewResults();
     clearStatus();
   }
@@ -644,7 +643,6 @@
     renderPreviewHeader();
     loadMetadataChoices();
     loadCourses();
-    addPerFilterSelectAllButtons();
     updateSelectionCount();
     const backBtn = document.getElementById("goBackBtn");
     if (backBtn) {
@@ -654,16 +652,11 @@
     }
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
-    document.getElementById("selectAllFiltersBtn").addEventListener("click", handleSelectAllFilters);
     document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
     document.getElementById("selectAllBtn").addEventListener("click", handleSelectAll);
     document.getElementById("unselectAllBtn").addEventListener("click", handleUnselectAll);
     document.getElementById("courseSearch").addEventListener("input", filterCourses);
     document.getElementById("selectAllCoursesBtn").addEventListener("click", handleSelectAllCourses);
     document.getElementById("clearAllCoursesBtn").addEventListener("click", handleClearAllCourses);
-    const selectAllFiltersBtn = document.getElementById("selectAllFiltersBtn");
-    if (selectAllFiltersBtn) {
-      selectAllFiltersBtn.addEventListener("click", addPerFilterSelectAllButtons);
-    }
   });
 })();
