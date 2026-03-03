@@ -1,6 +1,22 @@
 (function () {
   let metadataFilterKeys = [];
 
+  const DEFAULT_METADATA_FILTER_KEYS = [
+    "dealer_id",
+    "champion_name",
+    "champion_mobile",
+    "dealer_name",
+    "city",
+    "state",
+    "dealer_category",
+    "cluster",
+    "asm_1",
+    "asm_2",
+    "role",
+    "department",
+    "brand",
+  ];
+
   const selectedIdentifiers = new Set();
   const tomSelectByKey = new Map();
 
@@ -412,11 +428,13 @@
       credentials: "same-origin",
     });
 
+    const raw = await response.text();
     let data;
     try {
-      data = await response.json();
+      data = raw ? JSON.parse(raw) : {};
     } catch (error) {
-      data = { detail: "Server returned non-JSON response." };
+      const snippet = raw.slice(0, 160).replace(/\s+/g, " ").trim();
+      data = { detail: snippet ? `Server returned non-JSON response: ${snippet}` : "Server returned non-JSON response." };
     }
 
     if (!response.ok) {
@@ -474,6 +492,7 @@
       const result = await getJSON("/api/userops/v1/metadata/choices");
       populateFilterChoices(result.choices || {}, result.keys || []);
     } catch (error) {
+      populateFilterChoices({}, DEFAULT_METADATA_FILTER_KEYS);
       setStatus(`Failed to load filter choices. ${formatError(error)}`, "error");
     }
   }
@@ -485,6 +504,7 @@
       renderCourses(courses);
       filterCourses();
     } catch (error) {
+      renderCourses([]);
       setStatus(`Failed to load courses. ${formatError(error)}`, "error");
     }
   }
