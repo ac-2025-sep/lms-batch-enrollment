@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from userops.api.permissions import IsStaffUser
-from userops.services.meta_filter import METADATA_FILTER_KEYS, extract_org
+from userops.services.meta_filter import extract_org
 
 CACHE_KEY = "userops:metadata_choices:v3"
 CACHE_TTL_SECONDS = 300
