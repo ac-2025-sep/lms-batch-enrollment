@@ -608,6 +608,7 @@
     renderPreviewHeader();
     loadMetadataChoices();
     loadCourses();
+    addPerFilterSelectAllButtons();
     updateSelectionCount();
     const backBtn = document.getElementById("goBackBtn");
     if (backBtn) {
@@ -617,6 +618,7 @@
     }
     document.getElementById("preview-btn").addEventListener("click", handlePreview);
     document.getElementById("execute-btn").addEventListener("click", handleExecute);
+    document.getElementById("selectAllFiltersBtn").addEventListener("click", handleSelectAllFilters);
     document.getElementById("resetFiltersBtn").addEventListener("click", handleResetFilters);
     document.getElementById("selectAllBtn").addEventListener("click", handleSelectAll);
     document.getElementById("unselectAllBtn").addEventListener("click", handleUnselectAll);
