@@ -6,9 +6,25 @@ from rest_framework.views import APIView
 from userops.api.permissions import IsStaffUser
 from userops.services.meta_filter import extract_org
 
-CACHE_KEY = "userops:metadata_choices:v3"
+CACHE_KEY = "userops:metadata_choices:v4"
 CACHE_TTL_SECONDS = 300
 
+
+BASELINE_METADATA_FILTER_KEYS = [
+    "dealer_id",
+    "champion_name",
+    "champion_mobile",
+    "dealer_name",
+    "city",
+    "state",
+    "dealer_category",
+    "cluster",
+    "asm_1",
+    "asm_2",
+    "role",
+    "department",
+    "brand",
+]
 
 def _course_org_run(course_key):
     org = getattr(course_key, "org", "")
@@ -53,7 +69,7 @@ class MetadataChoicesView(APIView):
                     values_by_key.setdefault(key_str, set()).add(value)
 
             discovered_keys = set(values_by_key.keys())
-            keys = sorted(set(METADATA_FILTER_KEYS).union(discovered_keys))
+            keys = sorted(set(BASELINE_METADATA_FILTER_KEYS).union(discovered_keys))
             choices = {key: sorted(values_by_key.get(key, set())) for key in keys}
             payload = {"choices": choices, "keys": keys}
             cache.set(CACHE_KEY, payload, CACHE_TTL_SECONDS)
