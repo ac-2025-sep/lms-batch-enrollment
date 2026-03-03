@@ -536,6 +536,22 @@
 
 
 
+
+  function addPerFilterSelectAllButtons() {
+    for (const key of metadataFilterKeys) {
+      const select = document.getElementById(`filter-${key}`);
+      const instance = tomSelectByKey.get(key);
+      if (instance) {
+        instance.setValue(Object.keys(instance.options), true);
+      } else if (select) {
+        for (const option of select.options) {
+          option.selected = true;
+        }
+        select.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }
+  }
+
   function handleResetFilters() {
     for (const key of metadataFilterKeys) {
       const instance = tomSelectByKey.get(key);
@@ -625,5 +641,9 @@
     document.getElementById("courseSearch").addEventListener("input", filterCourses);
     document.getElementById("selectAllCoursesBtn").addEventListener("click", handleSelectAllCourses);
     document.getElementById("clearAllCoursesBtn").addEventListener("click", handleClearAllCourses);
+    const selectAllFiltersBtn = document.getElementById("selectAllFiltersBtn");
+    if (selectAllFiltersBtn) {
+      selectAllFiltersBtn.addEventListener("click", addPerFilterSelectAllButtons);
+    }
   });
 })();
