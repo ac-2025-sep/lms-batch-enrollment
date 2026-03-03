@@ -30,21 +30,7 @@
 
     <section class="card">
       <h2>Metadata Filters</h2>
-      <div class="grid">
-        <label>dealer_id <select id="filter-dealer_id" class="meta-filter" multiple size="6"></select></label>
-        <label>champion_name <select id="filter-champion_name" class="meta-filter" multiple size="6"></select></label>
-        <label>champion_mobile <select id="filter-champion_mobile" class="meta-filter" multiple size="6"></select></label>
-        <label>dealer_name <select id="filter-dealer_name" class="meta-filter" multiple size="6"></select></label>
-        <label>city <select id="filter-city" class="meta-filter" multiple size="6"></select></label>
-        <label>state <select id="filter-state" class="meta-filter" multiple size="6"></select></label>
-        <label>dealer_category <select id="filter-dealer_category" class="meta-filter" multiple size="6"></select></label>
-        <label>cluster <select id="filter-cluster" class="meta-filter" multiple size="6"></select></label>
-        <label>asm_1 <select id="filter-asm_1" class="meta-filter" multiple size="6"></select></label>
-        <label>asm_2 <select id="filter-asm_2" class="meta-filter" multiple size="6"></select></label>
-        <label>role <select id="filter-role" class="meta-filter" multiple size="6"></select></label>
-        <label>department <select id="filter-department" class="meta-filter" multiple size="6"></select></label>
-        <label>brand <select id="filter-brand" class="meta-filter" multiple size="6"></select></label>
-      </div>
+      <div id="metadataFiltersContainer" class="grid"></div>
       <div class="filter-actions">
         <button id="preview-btn" type="button">Preview Users</button>
         <button id="selectAllFiltersBtn" type="button" class="admin-btn secondary-btn">Select All Filter Values</button>
@@ -64,22 +50,7 @@
         <div class="table-wrap">
           <table id="preview-table">
             <thead>
-              <tr>
-                <th>Select</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Dealer ID</th>
-                <th>Dealer Name</th>
-                <th>City</th>
-                <th>State</th>
-                <th>Dealer Category</th>
-                <th>Cluster</th>
-                <th>ASM 1</th>
-                <th>ASM 2</th>
-                <th>Role</th>
-                <th>Department</th>
-                <th>Brand</th>
-              </tr>
+              <tr id="preview-table-header-row"></tr>
             </thead>
             <tbody></tbody>
           </table>

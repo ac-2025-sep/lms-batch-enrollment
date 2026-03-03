@@ -15,6 +15,8 @@ It installs a staff-only API in LMS to:
 - Matching users are converted to email identifiers (users with empty email are skipped).
 - Enrollment is forwarded to Open edX `BulkEnrollView` (no custom enrollment DB writes).
 
+- Metadata filter keys/values in the dashboard are discovered dynamically from `UserProfile.meta["org"]` via `/api/userops/v1/metadata/choices`; UI controls are not hardcoded to a fixed key list.
+
 
 ## UserOps Dashboard (Staff Only)
 

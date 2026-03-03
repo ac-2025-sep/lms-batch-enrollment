@@ -1,35 +1,5 @@
 (function () {
-  const FILTER_KEYS = [
-    "dealer_id",
-    "champion_name",
-    "champion_mobile",
-    "dealer_name",
-    "city",
-    "state",
-    "dealer_category",
-    "cluster",
-    "asm_1",
-    "asm_2",
-    "role",
-    "department",
-    "brand",
-  ];
-
-  const PREVIEW_COLUMNS = [
-    "username",
-    "email",
-    "dealer_id",
-    "dealer_name",
-    "city",
-    "state",
-    "dealer_category",
-    "cluster",
-    "asm_1",
-    "asm_2",
-    "role",
-    "department",
-    "brand",
-  ];
+  let metadataFilterKeys = [];
 
   const selectedIdentifiers = new Set();
   const tomSelectByKey = new Map();
@@ -73,6 +43,62 @@
     return normalized ? `${normalized}_${index}` : `course_${index}`;
   }
 
+  function formatKeyLabel(key) {
+    return key
+      .replace(/_/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  function renderMetadataFilters(keys) {
+    const container = document.getElementById("metadataFiltersContainer");
+    container.innerHTML = "";
+
+    if (!keys.length) {
+      const empty = document.createElement("p");
+      empty.className = "muted";
+      empty.textContent = "No metadata filters available.";
+      container.appendChild(empty);
+      return;
+    }
+
+    for (const key of keys) {
+      const label = document.createElement("label");
+      label.htmlFor = `filter-${key}`;
+      label.textContent = formatKeyLabel(key);
+
+      const select = document.createElement("select");
+      select.id = `filter-${key}`;
+      select.className = "meta-filter";
+      select.multiple = true;
+      select.size = 6;
+
+      label.appendChild(select);
+      container.appendChild(label);
+    }
+  }
+
+  function renderPreviewHeader() {
+    const headerRow = document.getElementById("preview-table-header-row");
+    if (!headerRow) {
+      return;
+    }
+
+    headerRow.innerHTML = "";
+    const baseHeaders = ["Select", "Username", "Email"];
+
+    for (const label of baseHeaders) {
+      const th = document.createElement("th");
+      th.textContent = label;
+      headerRow.appendChild(th);
+    }
+
+    for (const key of metadataFilterKeys) {
+      const th = document.createElement("th");
+      th.textContent = formatKeyLabel(key);
+      headerRow.appendChild(th);
+    }
+  }
+
   function collectFilters() {
     const filters = {};
     document.querySelectorAll("select.meta-filter").forEach((select) => {
@@ -86,6 +112,43 @@
       }
     });
     return filters;
+  }
+
+  function ensureDropdownSelectAllAction(instance, select, key) {
+    const dropdownContent = instance.dropdown_content;
+    if (!dropdownContent) {
+      return;
+    }
+
+    const existingAction = dropdownContent.querySelector(`.ts-select-all-action[data-filter-key="${key}"]`);
+    if (existingAction) {
+      return;
+    }
+
+    const actionWrap = document.createElement("div");
+    actionWrap.className = "ts-select-all-action";
+    actionWrap.dataset.filterKey = key;
+
+    const actionButton = document.createElement("button");
+    actionButton.type = "button";
+    actionButton.className = "ts-select-all-btn";
+    actionButton.textContent = "Select all";
+    actionButton.addEventListener("mousedown", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    });
+    actionButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const allValues = Object.keys(instance.options);
+      instance.setValue(allValues, true);
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+      instance.refreshOptions(false);
+    });
+
+    actionWrap.appendChild(actionButton);
+    dropdownContent.prepend(actionWrap);
   }
 
   function initializeTomSelect(select, key) {
@@ -105,7 +168,11 @@
       create: false,
       closeAfterSelect: false,
       maxOptions: null,
+      onDropdownOpen: function () {
+        ensureDropdownSelectAllAction(instance, select, key);
+      },
     });
+    ensureDropdownSelectAllAction(instance, select, key);
     tomSelectByKey.set(key, instance);
   }
 
@@ -290,8 +357,8 @@
       }
       row.appendChild(checkboxCell);
 
-      for (const column of PREVIEW_COLUMNS) {
-        const value = user[column] || "";
+      for (const column of metadataFilterKeys) {
+        const value = (user.org && user.org[column]) || "";
         const cell = document.createElement("td");
         cell.className = "meta";
         cell.textContent = value;
@@ -308,13 +375,25 @@
     clearSelectionState();
   }
 
-  function populateFilterChoices(choices) {
-    for (const key of FILTER_KEYS) {
+  function populateFilterChoices(choices, keys) {
+    const resolvedKeys = Array.isArray(keys) && keys.length ? keys : Object.keys(choices || {}).sort();
+
+    for (const [key, instance] of tomSelectByKey.entries()) {
+      if (!resolvedKeys.includes(key)) {
+        instance.destroy();
+        tomSelectByKey.delete(key);
+      }
+    }
+
+    metadataFilterKeys = resolvedKeys;
+    renderMetadataFilters(metadataFilterKeys);
+    renderPreviewHeader();
+
+    for (const key of metadataFilterKeys) {
       const select = document.getElementById(`filter-${key}`);
       if (!select) {
         continue;
       }
-      select.innerHTML = "";
       const values = Array.isArray(choices[key]) ? choices[key] : [];
       for (const value of values) {
         const option = document.createElement("option");
@@ -393,7 +472,7 @@
   async function loadMetadataChoices() {
     try {
       const result = await getJSON("/api/userops/v1/metadata/choices");
-      populateFilterChoices(result.choices || {});
+      populateFilterChoices(result.choices || {}, result.keys || []);
     } catch (error) {
       setStatus(`Failed to load filter choices. ${formatError(error)}`, "error");
     }
@@ -456,50 +535,9 @@
 
 
 
-  function selectAllFilterValuesForKey(key) {
-    const select = document.getElementById(`filter-${key}`);
-    if (!select) {
-      return;
-    }
-
-    const allValues = Array.from(select.options).map((option) => option.value);
-    const instance = tomSelectByKey.get(key);
-    if (instance) {
-      instance.setValue(allValues, true);
-    } else {
-      for (const option of select.options) {
-        option.selected = true;
-      }
-    }
-    select.dispatchEvent(new Event("change", { bubbles: true }));
-  }
-
-  function addPerFilterSelectAllButtons() {
-    for (const key of FILTER_KEYS) {
-      const select = document.getElementById(`filter-${key}`);
-      if (!select || !select.parentElement) {
-        continue;
-      }
-
-      const existingButton = select.parentElement.querySelector(`button[data-filter-key="${key}"]`);
-      if (existingButton) {
-        continue;
-      }
-
-      const button = document.createElement("button");
-      button.type = "button";
-      button.className = "admin-btn secondary-btn";
-      button.dataset.filterKey = key;
-      button.textContent = "Select all";
-      button.addEventListener("click", function () {
-        selectAllFilterValuesForKey(key);
-      });
-      select.parentElement.appendChild(button);
-    }
-  }
 
   function handleResetFilters() {
-    for (const key of FILTER_KEYS) {
+    for (const key of metadataFilterKeys) {
       const instance = tomSelectByKey.get(key);
       const select = document.getElementById(`filter-${key}`);
       if (instance) {
@@ -567,6 +605,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", function () {
+    renderPreviewHeader();
     loadMetadataChoices();
     loadCourses();
     addPerFilterSelectAllButtons();
