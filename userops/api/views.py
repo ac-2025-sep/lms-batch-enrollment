@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from userops.api.permissions import IsStaffUser
 from userops.api.serializers import BulkEnrollByMetadataSerializer, PreviewRequestSerializer
 from userops.services.bulk_enroll import forward_to_bulk_enroll
-from userops.services.meta_filter import METADATA_FILTER_KEYS, extract_org, get_matched_profiles
+from userops.services.meta_filter import extract_org, get_matched_profiles
 
 
 class UserPreviewByMetadataView(APIView):
@@ -25,7 +25,7 @@ class UserPreviewByMetadataView(APIView):
                 {
                     "username": profile.user.username,
                     "email": profile.user.email,
-                    **{key: org.get(key, "") for key in METADATA_FILTER_KEYS},
+                    "org": org,
                 }
             )
 
