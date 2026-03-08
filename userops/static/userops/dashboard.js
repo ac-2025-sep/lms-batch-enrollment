@@ -375,6 +375,14 @@
       }
       row.appendChild(checkboxCell);
 
+      const usernameCell = document.createElement("td");
+      usernameCell.textContent = user.username || "";
+      row.appendChild(usernameCell);
+
+      const emailCell = document.createElement("td");
+      emailCell.textContent = user.email || "";
+      row.appendChild(emailCell);
+
       for (const column of metadataFilterKeys) {
         const value = (user.org && user.org[column]) || "";
         const cell = document.createElement("td");
